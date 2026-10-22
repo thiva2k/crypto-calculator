@@ -14,7 +14,6 @@ import binascii
 import getpass
 import hashlib
 import secrets
-import sys
 from pathlib import Path
 
 from cryptography.exceptions import InvalidTag
@@ -30,12 +29,10 @@ KEY_LEN = 32    # bytes, AES-256
 
 
 # ---------------------------------------------------------------------------
-# Core crypto operations (pure functions, no I/O)
+# Crypto helpers
+# AES passphrase: salt || nonce || ciphertext+tag; raw/generated key: nonce || ciphertext+tag.
+# Salts, nonces, generated AES keys: secrets.token_bytes. RSA keys: rsa.generate_private_key (OpenSSL RNG).
 # ---------------------------------------------------------------------------
-
-def sha256_hex(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
-
 
 def derive_key(passphrase: str, salt: bytes) -> bytes:
     kdf = PBKDF2HMAC(

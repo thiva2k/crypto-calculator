@@ -20,7 +20,8 @@ how real cryptography fits together.
 - **AES-256-GCM** — authenticated encryption with three key options:
   passphrase (PBKDF2-HMAC-SHA256, 600,000 iterations), your own raw
   256-bit key (hex or base64), or a freshly generated random key.
-  Output is a single base64 token bundling `salt ∥ nonce ∥ ciphertext+tag`.
+  Passphrase mode is `salt ∥ nonce ∥ ciphertext+tag`; raw and generated
+  key mode is `nonce ∥ ciphertext+tag`.
 - **RSA-OAEP (SHA-256)** — generate 2048/3072/4096-bit key pairs as PEM
   files, encrypt with a public key, decrypt with a private key.
   Enforces and explains the OAEP plaintext size limit.
@@ -42,8 +43,8 @@ Requires Python 3.9+.
 
 ## Security notes
 
-- All randomness (keys, salts, nonces) comes from the OS CSPRNG via
-  `secrets.token_bytes`.
+- Salts, nonces, and generated AES keys come from `secrets.token_bytes`.
+  RSA keys come from `rsa.generate_private_key` (OpenSSL RNG).
 - Passphrases are read with `getpass` (hidden input) and stretched with
   PBKDF2 — never used directly as keys.
 - Generated private key files are written with mode `600`.
@@ -54,7 +55,7 @@ Requires Python 3.9+.
 
 `crypto_calculator.py` is organised in three layers:
 
-1. **Pure crypto functions** — no I/O, independently testable
+1. **Crypto helpers** — SHA-256, AES-256-GCM, and RSA-OAEP
 2. **Prompt helpers** — reusable input/PEM-reading utilities
 3. **Menu actions** — one `do_*` function per menu item
 
